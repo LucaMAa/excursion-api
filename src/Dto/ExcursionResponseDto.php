@@ -16,11 +16,12 @@ final class ExcursionResponseDto
         public readonly ?string $country,
         public readonly string $date,
         public readonly int $capacity,
+        public readonly int $availableSeats,
         public readonly string $created_at,
     ) {
     }
 
-    public static function fromExcursion(Excursion $excursion): self
+    public static function fromExcursion(Excursion $excursion, int $availableSeats): self
     {
         return new self(
             id: $excursion->getId(),
@@ -30,17 +31,8 @@ final class ExcursionResponseDto
             country: $excursion->getCountry(),
             date: $excursion->getDate()->format('Y-m-d'),
             capacity: $excursion->getCapacity(),
+            availableSeats: $availableSeats,
             created_at: $excursion->getCreatedAt()->format('Y-m-d H:i:s'),
         );
-    }
-
-    /**
-     * @param Excursion[] $excursions
-     *
-     * @return self[]
-     */
-    public static function fromExcursions(array $excursions): array
-    {
-        return array_map(self::fromExcursion(...), $excursions);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\ExcursionRepository;
@@ -7,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ExcursionRepository::class)]
 class Excursion
@@ -35,17 +38,22 @@ class Excursion
     private ?int $capacity = null;
 
     #[ORM\Column]
+    #[Gedmo\Timestampable(on: 'create')]
     private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column(nullable: true)]
+    #[Gedmo\Timestampable(on: 'update')]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     /**
      * @var Collection<int, Booking>
      */
     #[ORM\OneToMany(targetEntity: Booking::class, mappedBy: 'excursion')]
-    private Collection $customerName;
+    private Collection $bookings;
 
     public function __construct()
     {
-        $this->customerName = new ArrayCollection();
+        $this->bookings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,14 +140,26 @@ class Excursion
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
@@ -147,27 +167,26 @@ class Excursion
     /**
      * @return Collection<int, Booking>
      */
-    public function getCustomerName(): Collection
+    public function getBookings(): Collection
     {
-        return $this->customerName;
+        return $this->bookings;
     }
 
-    public function addCustomerName(Booking $customerName): static
+    public function addBooking(Booking $booking): static
     {
-        if (!$this->customerName->contains($customerName)) {
-            $this->customerName->add($customerName);
-            $customerName->setExcursion($this);
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setExcursion($this);
         }
 
         return $this;
     }
 
-    public function removeCustomerName(Booking $customerName): static
+    public function removeBooking(Booking $booking): static
     {
-        if ($this->customerName->removeElement($customerName)) {
-            // set the owning side to null (unless already changed)
-            if ($customerName->getExcursion() === $this) {
-                $customerName->setExcursion(null);
+        if ($this->bookings->removeElement($booking)) {
+            if ($booking->getExcursion() === $this) {
+                $booking->setExcursion(null);
             }
         }
 

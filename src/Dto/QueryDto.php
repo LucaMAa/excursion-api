@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-final class ExcursionQueryDto
+final class QueryDto
 {
     public function __construct(
         private readonly int $limit = 10,

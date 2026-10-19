@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\BookingRepository;
@@ -13,7 +15,7 @@ class Booking
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'customerName')]
+    #[ORM\ManyToOne(inversedBy: 'bookings')]
     private ?Excursion $excursion = null;
 
     #[ORM\Column(length: 255, nullable: true)]

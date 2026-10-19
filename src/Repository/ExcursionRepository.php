@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repository;
 
 use App\Entity\Excursion;
@@ -11,19 +13,20 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ExcursionRepository extends ServiceEntityRepository
 {
+    public const LIMIT = 10;
+    public const OFFSET = 0;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Excursion::class);
     }
 
-    public function findAll(int $limit = 10, int $offset = 0): array
+    public function findAll(int $limit = self::LIMIT, int $offset = self::OFFSET): array
     {
         return $this->createQueryBuilder('e')
-            ->orderBy('e.date', 'ASC')
             ->setMaxResults($limit)
             ->setFirstResult($offset)
             ->getQuery()
             ->getResult();
     }
-
 }

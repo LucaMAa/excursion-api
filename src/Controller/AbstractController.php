@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionParameter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as SymfonyAbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,35 +34,118 @@ abstract class AbstractController extends SymfonyAbstractController
     {
         $data = $request->toArray();
 
-        if ($data !== [] && array_is_list($data)) {
+        if ([] !== $data && array_is_list($data)) {
             throw new BadRequestHttpException('The request body must be a JSON object.');
         }
 
         return $this->mapDto($dtoClass, $data);
     }
 
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $dtoClass
+     *
+     * @return list<T>
+     */
+    protected function bodyDtoList(Request $request, string $dtoClass): array
+    {
+        $data = $request->toArray();
+        if (!array_is_list($data) || [] === $data) {
+            throw new BadRequestHttpException('The request body must be a non-empty JSON array.');
+        }
+
+        $dtos = [];
+        foreach ($data as $item) {
+            if (!is_array($item)) {
+                throw new BadRequestHttpException('Each item in the request body must be a JSON object.');
+            }
+
+            $dtos[] = $this->mapDto($dtoClass, $item);
+        }
+
+        return $dtos;
+    }
+
+    /**
+     * @param object|array<array-key, mixed> $dto
+     * @param array<string, string>          $headers
+     */
     protected function dtoResponse(
         object|array $dto,
         int $status = JsonResponse::HTTP_OK,
         array $headers = [],
     ): JsonResponse {
-        return new JsonResponse($dto, $status, $headers);
+        return new JsonResponse($this->normalizeResponseData($dto), $status, $headers);
+    }
+
+    /**
+     * @param \SplObjectStorage<object, null>|null $seen
+     */
+    private function normalizeResponseData(mixed $data, ?\SplObjectStorage $seen = null): mixed
+    {
+        if (is_array($data)) {
+            foreach ($data as $key => $value) {
+                $data[$key] = $this->normalizeResponseData($value, $seen);
+            }
+
+            return $data;
+        }
+
+        if (!is_object($data)) {
+            return $data;
+        }
+
+        if ($data instanceof \DateTimeInterface) {
+            return $data->format(\DateTimeInterface::ATOM);
+        }
+
+        if ($data instanceof \JsonSerializable) {
+            return $this->normalizeResponseData($data->jsonSerialize(), $seen);
+        }
+
+        $seen ??= new \SplObjectStorage();
+        if ($seen->contains($data)) {
+            throw new \LogicException(sprintf('A cyclic object graph cannot be serialized in a response (%s).', $data::class));
+        }
+
+        $seen->attach($data);
+
+        try {
+            $normalized = [];
+            $reflection = new \ReflectionClass($data);
+
+            foreach ($reflection->getProperties() as $property) {
+                if ($property->isStatic() || !$property->isInitialized($data)) {
+                    continue;
+                }
+
+                $normalized[$property->getName()] = $this->normalizeResponseData(
+                    $property->getValue($data),
+                    $seen,
+                );
+            }
+
+            return $normalized;
+        } finally {
+            $seen->detach($data);
+        }
     }
 
     /**
      * @template T of object
      *
-     * @param class-string<T> $dtoClass
+     * @param class-string<T>      $dtoClass
      * @param array<string, mixed> $data
      *
      * @return T
      */
     private function mapDto(string $dtoClass, array $data): object
     {
-        $reflection = new ReflectionClass($dtoClass);
+        $reflection = new \ReflectionClass($dtoClass);
         $constructor = $reflection->getConstructor();
 
-        if (!$reflection->isInstantiable() || $constructor === null) {
+        if (!$reflection->isInstantiable() || null === $constructor) {
             throw new \LogicException(sprintf('DTO "%s" must be instantiable and have a constructor.', $dtoClass));
         }
 
@@ -86,14 +166,14 @@ abstract class AbstractController extends SymfonyAbstractController
         return $reflection->newInstanceArgs($arguments);
     }
 
-    private function convertValue(mixed $value, ReflectionParameter $parameter): mixed
+    private function convertValue(mixed $value, \ReflectionParameter $parameter): mixed
     {
         $type = $parameter->getType();
-        if (!$type instanceof ReflectionNamedType) {
+        if (!$type instanceof \ReflectionNamedType) {
             throw new \LogicException(sprintf('DTO field "%s" must use a named type.', $parameter->getName()));
         }
 
-        if ($value === null) {
+        if (null === $value) {
             if ($type->allowsNull()) {
                 return null;
             }
@@ -112,15 +192,11 @@ abstract class AbstractController extends SymfonyAbstractController
             'bool' => $this->booleanValue($value, $parameter),
             'array' => is_array($value) ? $value : throw $this->invalidField($parameter),
             'mixed' => $value,
-            default => throw new \LogicException(sprintf(
-                'DTO field "%s" uses unsupported type "%s".',
-                $parameter->getName(),
-                $type->getName(),
-            )),
+            default => throw new \LogicException(sprintf('DTO field "%s" uses unsupported type "%s".', $parameter->getName(), $type->getName())),
         };
     }
 
-    private function stringValue(mixed $value, ReflectionParameter $parameter): string
+    private function stringValue(mixed $value, \ReflectionParameter $parameter): string
     {
         if (!is_string($value) && !is_int($value) && !is_float($value) && !is_bool($value)) {
             throw $this->invalidField($parameter);
@@ -129,17 +205,17 @@ abstract class AbstractController extends SymfonyAbstractController
         return (string) $value;
     }
 
-    private function integerValue(mixed $value, ReflectionParameter $parameter): int
+    private function integerValue(mixed $value, \ReflectionParameter $parameter): int
     {
         $converted = filter_var($value, FILTER_VALIDATE_INT);
-        if ($converted === false) {
+        if (false === $converted) {
             throw $this->invalidField($parameter);
         }
 
         return $converted;
     }
 
-    private function floatValue(mixed $value, ReflectionParameter $parameter): float
+    private function floatValue(mixed $value, \ReflectionParameter $parameter): float
     {
         if (!is_numeric($value)) {
             throw $this->invalidField($parameter);
@@ -148,17 +224,17 @@ abstract class AbstractController extends SymfonyAbstractController
         return (float) $value;
     }
 
-    private function booleanValue(mixed $value, ReflectionParameter $parameter): bool
+    private function booleanValue(mixed $value, \ReflectionParameter $parameter): bool
     {
         $converted = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        if ($converted === null) {
+        if (null === $converted) {
             throw $this->invalidField($parameter);
         }
 
         return $converted;
     }
 
-    private function invalidField(ReflectionParameter $parameter): BadRequestHttpException
+    private function invalidField(\ReflectionParameter $parameter): BadRequestHttpException
     {
         return new BadRequestHttpException(sprintf('Field "%s" has an invalid value.', $parameter->getName()));
     }
