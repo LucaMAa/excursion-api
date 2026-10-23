@@ -13,19 +13,11 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class BookingRepository extends ServiceEntityRepository
 {
-    /**
-     * @param ManagerRegistry $registry
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Booking::class);
     }
 
-    /**
-     * @param int $excursionId
-     *
-     * @return int
-     */
     public function getReservedSeatsForExcursion(int $excursionId): int
     {
         return (int) $this->createQueryBuilder('b')

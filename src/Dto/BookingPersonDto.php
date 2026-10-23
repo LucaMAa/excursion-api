@@ -9,14 +9,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * BookingPersonDto class.
  */
-final class BookingPersonDto
+final readonly class BookingPersonDto
 {
     public function __construct(
-        private readonly string $customerName,
+        private string $customerName,
         #[Assert\Email]
-        private readonly string $customerEmail,
+        private string $customerEmail,
         #[Assert\Positive]
-        private readonly int $seats,
+        private int $seats,
     ) {
     }
 

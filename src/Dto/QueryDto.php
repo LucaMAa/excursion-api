@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-final class QueryDto
+final readonly class QueryDto
 {
     public function __construct(
-        private readonly int $limit = 10,
-        private readonly int $offset = 0,
+        private int $limit = 10,
+        private int $offset = 0,
     ) {
     }
 

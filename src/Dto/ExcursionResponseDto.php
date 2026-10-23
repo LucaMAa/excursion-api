@@ -6,33 +6,37 @@ namespace App\Dto;
 
 use App\Entity\Excursion;
 
-final class ExcursionResponseDto
+final readonly class ExcursionResponseDto
 {
-    public function __construct(
-        public readonly ?int $id,
-        public readonly ?string $title,
-        public readonly ?string $description,
-        public readonly ?string $city,
-        public readonly ?string $country,
-        public readonly string $date,
-        public readonly int $capacity,
-        public readonly int $availableSeats,
-        public readonly string $created_at,
+    public ?int $id;
+    public ?string $title;
+    public ?string $description;
+    public ?string $city;
+    public ?string $country;
+    public string $date;
+    public int $capacity;
+    public string $createdAt;
+
+    private function __construct(
+        Excursion $excursion,
+        public int $availableSeats,
+        public ?WeatherForecastDto $forecast,
     ) {
+        $this->id = $excursion->getId();
+        $this->title = $excursion->getTitle();
+        $this->description = $excursion->getDescription();
+        $this->city = $excursion->getCity();
+        $this->country = $excursion->getCountry();
+        $this->date = $excursion->getDate()->format('Y-m-d');
+        $this->capacity = $excursion->getCapacity();
+        $this->createdAt = $excursion->getCreatedAt()->format('Y-m-d H:i:s');
     }
 
-    public static function fromExcursion(Excursion $excursion, int $availableSeats): self
-    {
-        return new self(
-            id: $excursion->getId(),
-            title: $excursion->getTitle(),
-            description: $excursion->getDescription(),
-            city: $excursion->getCity(),
-            country: $excursion->getCountry(),
-            date: $excursion->getDate()->format('Y-m-d'),
-            capacity: $excursion->getCapacity(),
-            availableSeats: $availableSeats,
-            created_at: $excursion->getCreatedAt()->format('Y-m-d H:i:s'),
-        );
+    public static function fromExcursion(
+        Excursion $excursion,
+        int $availableSeats,
+        ?WeatherForecastDto $forecast = null,
+    ): self {
+        return new self($excursion, $availableSeats, $forecast);
     }
 }

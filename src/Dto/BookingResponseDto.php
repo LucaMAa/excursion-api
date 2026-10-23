@@ -6,12 +6,12 @@ namespace App\Dto;
 
 use App\Entity\Booking;
 
-final class BookingResponseDto
+final readonly class BookingResponseDto
 {
     public function __construct(
-        public readonly int $bookingId,
-        public readonly int $excursionId,
-        public readonly int $seats,
+        public int $bookingId,
+        public int $excursionId,
+        public int $seats,
     ) {
     }
 

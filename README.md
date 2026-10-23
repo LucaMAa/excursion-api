@@ -4,7 +4,8 @@ REST API per escursioni e prenotazioni, basata su Symfony, PostgreSQL e JWT.
 
 ## Avvio locale con Docker
 
-Prerequisiti: Docker con Docker Compose e Git.
+Prerequisiti: Docker con Docker Compose e Git. L'immagine applicativa usa PHP
+8.4.27.
 
 ```sh
 git clone <repository-url>
@@ -37,17 +38,6 @@ docker compose ps
 
 Base URL dell'API: `http://localhost:8080`.
 
-## OpenAPI e Swagger UI
-
-Con i container avviati, apri:
-
-- Swagger UI: <http://localhost:8080/api/doc>
-- Spec OpenAPI JSON: <http://localhost:8080/api/doc.json>
-
-La UI descrive request body, risposte e autenticazione JWT. Per provare le
-rotte protette, usa il pulsante **Authorize** e incolla il token JWT (senza
-aggiungere manualmente `Bearer `: Swagger applica lo schema Bearer).
-
 ## Test con Postman
 
 Importa in Postman la collection
@@ -64,7 +54,7 @@ Imposta le variabili della collection:
 
 Esegui le richieste in questo ordine:
 
-1. **Register user** — `POST /api/register`; crea un utente con ruolo
+1. **Register user** — `POST /api/register`; defualt crea un utente con ruolo
    `ROLE_USER` (HTTP `201`).
 2. **Login user** — `POST /api/login_check`; autentica l'utente e salva
    automaticamente il JWT nella variabile `token`.
@@ -78,9 +68,21 @@ Esegui le richieste in questo ordine:
    array non vuoto di persone. Ogni email può prenotare una sola volta per
    escursione.
 
+La risposta di `GET /api/excursions` include il campo `forecast`, nullable.
+Quando disponibile, contiene temperatura minima/massima in °C, precipitazioni
+giornaliere in mm e il codice meteo WMO. Il dato viene richiesto gratuitamente
+a Open-Meteo solo per escursioni dalla data odierna ai 15 giorni successivi;
+per le altre date, città non geocodificabili o servizi non raggiungibili vale
+`"forecast": null`.
+
 La collection include anche **Ping** e **Login admin**. Il login admin salva
 il token nella stessa variabile `token`, che viene usata dalle richieste
 autenticate successive.
+
+Nginx applica limiti per indirizzo IP agli endpoint pubblici:
+`/api/login_check` consente 5 richieste al minuto (+2 di burst),
+`/api/register` 1 al minuto (+1 di burst) e `/api/ping` 60 al minuto
+(+10 di burst). Le richieste oltre il limite ricevono HTTP `429`.
 
 Esempio di body per creare un'escursione:
 

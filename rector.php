@@ -9,4 +9,4 @@ return RectorConfig::configure()
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])
-    ->withPhpSets(php83: true);
+    ->withPhpSets(php84: true);

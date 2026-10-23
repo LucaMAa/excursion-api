@@ -7,15 +7,15 @@ namespace App\Dto;
 /**
  * CreateExcursionRequestDto class.
  */
-final class CreateExcursionRequestDto
+final readonly class CreateExcursionRequestDto
 {
     public function __construct(
-        private readonly string $title,
-        private readonly string $description,
-        private readonly string $city,
-        private readonly string $country,
-        private readonly string $date,
-        private readonly int $capacity,
+        private string $title,
+        private string $description,
+        private string $city,
+        private string $country,
+        private string $date,
+        private int $capacity,
     ) {
     }
 

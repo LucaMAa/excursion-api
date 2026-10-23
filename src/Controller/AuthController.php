@@ -45,7 +45,7 @@ final class AuthController extends AbstractController
             );
         }
 
-        $user = (new User())->setEmail($email);
+        $user = new User()->setEmail($email);
         $user->setPassword($passwordHasher->hashPassword($user, $data->getPassword()));
         $entityManager->persist($user);
 

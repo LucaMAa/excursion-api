@@ -11,7 +11,7 @@ final class UserTest extends TestCase
 {
     public function testEmailIsNormalizedAndUserRoleIsGrantedByDefault(): void
     {
-        $user = (new User())->setEmail('  Mario@Example.COM ');
+        $user = new User()->setEmail('  Mario@Example.COM ');
 
         self::assertSame('mario@example.com', $user->getEmail());
         self::assertSame('mario@example.com', $user->getUserIdentifier());
@@ -20,14 +20,14 @@ final class UserTest extends TestCase
 
     public function testAdminRoleIsPreservedAlongsideTheDefaultUserRole(): void
     {
-        $user = (new User())->setRoles(['ROLE_ADMIN']);
+        $user = new User()->setRoles(['ROLE_ADMIN']);
 
         self::assertSame(['ROLE_ADMIN', 'ROLE_USER'], $user->getRoles());
     }
 
     public function testSettingAnEmptyRoleListKeepsTheDefaultUserRole(): void
     {
-        $user = (new User())->setRoles([]);
+        $user = new User()->setRoles([]);
 
         self::assertSame(['ROLE_USER'], $user->getRoles());
     }

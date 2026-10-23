@@ -2,5 +2,5 @@ parameters:
     level: 6
     paths:
         - src
-    phpVersion: 80300
+    phpVersion: 80400
     tmpDir: var/phpstan

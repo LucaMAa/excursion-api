@@ -6,7 +6,7 @@ namespace App\Controller;
 
 use App\Dto\CreateExcursionRequestDto;
 use App\Dto\ExcursionResponseDto;
-use App\Service\ExcursionService;
+use App\Service\ExcursionWriteService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class AdminController extends AbstractController
 {
     public function __construct(
-        private readonly ExcursionService $excursionService,
+        private readonly ExcursionWriteService $excursionWriteService,
     ) {
     }
 
@@ -32,7 +32,7 @@ final class AdminController extends AbstractController
             throw new BadRequestHttpException('Field "date" has an invalid value.', $exception);
         }
 
-        $excursion = $this->excursionService->create($data, $date);
+        $excursion = $this->excursionWriteService->create($data, $date);
 
         return $this->dtoResponse(
             ExcursionResponseDto::fromExcursion($excursion, $excursion->getCapacity()),

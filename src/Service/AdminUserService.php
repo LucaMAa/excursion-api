@@ -9,12 +9,12 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final class AdminUserService
+final readonly class AdminUserService
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly UserPasswordHasherInterface $passwordHasher,
+        private UserRepository $userRepository,
+        private EntityManagerInterface $entityManager,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
@@ -24,7 +24,7 @@ final class AdminUserService
         $user = $this->userRepository->findOneBy(['email' => $email]);
 
         if (!$user instanceof User) {
-            $user = (new User())->setEmail($email);
+            $user = new User()->setEmail($email);
             $this->entityManager->persist($user);
         }
 

@@ -10,11 +10,11 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-final class BookingRequestValidator
+final readonly class BookingRequestValidator
 {
     public function __construct(
-        private readonly ValidatorInterface $validator,
-        private readonly BookingRepository $bookingRepository,
+        private ValidatorInterface $validator,
+        private BookingRepository $bookingRepository,
     ) {
     }
 

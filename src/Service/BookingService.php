@@ -14,12 +14,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-final class BookingService
+final readonly class BookingService
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly BookingRepository $bookingRepository,
-        private readonly BookingRequestValidator $bookingRequestValidator,
+        private EntityManagerInterface $entityManager,
+        private BookingRepository $bookingRepository,
+        private BookingRequestValidator $bookingRequestValidator,
     ) {
     }
 

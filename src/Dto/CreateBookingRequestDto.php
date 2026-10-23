@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-final class CreateBookingRequestDto
+final readonly class CreateBookingRequestDto
 {
     /**
      * @param list<BookingPersonDto> $bookingPersonDto
      */
-    public function __construct(private readonly array $bookingPersonDto)
+    public function __construct(private array $bookingPersonDto)
     {
     }
 

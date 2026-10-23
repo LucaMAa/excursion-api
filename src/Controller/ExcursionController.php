@@ -9,7 +9,7 @@ use App\Dto\BookingResponseDto;
 use App\Dto\CreateBookingRequestDto;
 use App\Dto\QueryDto;
 use App\Service\BookingService;
-use App\Service\ExcursionService;
+use App\Service\ExcursionReadService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ExcursionController extends AbstractController
 {
     public function __construct(
-        private readonly ExcursionService $excursionService,
+        private readonly ExcursionReadService $excursionReadService,
         private readonly BookingService $bookingService,
     ) {
     }
@@ -32,7 +32,7 @@ final class ExcursionController extends AbstractController
             throw new BadRequestHttpException('The limit must be positive and the offset cannot be negative.');
         }
 
-        $excursions = $this->excursionService->findExcursions(
+        $excursions = $this->excursionReadService->findExcursions(
             $query->getLimit(),
             $query->getOffset(),
         );
